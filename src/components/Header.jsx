@@ -15,9 +15,6 @@ export default function Header() {
         WorthMeter
       </h1>
       <nav className="header-nav">
-        <a href="http://localhost:5175" className="nav-btn app-link">
-          ZeroLine
-        </a>
         <button className="nav-btn sign-out" onClick={handleSignOut}>
           Sign Out
         </button>
