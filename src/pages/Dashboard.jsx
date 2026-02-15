@@ -18,6 +18,15 @@ export default function Dashboard() {
   const [showPenalty, setShowPenalty] = useState(false);
   const [nnStats, setNnStats] = useState({ done: 0, missed: 0, total: 0 });
   const [pastHistory, setPastHistory] = useState([]);
+  const [focusMode, setFocusMode] = useState(() => localStorage.getItem("focusMode") === "true");
+
+  const toggleFocusMode = () => {
+    setFocusMode((prev) => {
+      const next = !prev;
+      localStorage.setItem("focusMode", next);
+      return next;
+    });
+  };
 
   const fetchData = useCallback(async () => {
     const { data: targets } = await supabase
@@ -144,27 +153,50 @@ export default function Dashboard() {
 
   return (
     <div className="page">
+      <button
+        className="focus-toggle"
+        onClick={toggleFocusMode}
+        title={focusMode ? "Show all" : "Focus mode"}
+        aria-label={focusMode ? "Show all" : "Focus mode"}
+      >
+        {focusMode ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 12h4l3 9l4-18l3 9h4" />
+          </svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        )}
+      </button>
+
       <LiveDisplay
         target={target}
         totalPenalties={totalPenalties}
         nnStats={nnStats}
         pastHistory={pastHistory}
+        focusMode={focusMode}
       />
 
-      <NonNegotiables target={target} onStatsChange={setNnStats} />
+      {!focusMode && (
+        <>
+          <NonNegotiables target={target} onStatsChange={setNnStats} />
 
-      <PenaltyHistory penalties={penalties} />
+          <PenaltyHistory penalties={penalties} />
 
-      <button className="fab" onClick={() => setShowPenalty(true)}>
-        &minus;
-      </button>
+          <button className="fab" onClick={() => setShowPenalty(true)}>
+            &minus;
+          </button>
 
-      {showPenalty && (
-        <PenaltyModal
-          targetId={target.id}
-          onClose={() => setShowPenalty(false)}
-          onAdded={fetchData}
-        />
+          {showPenalty && (
+            <PenaltyModal
+              targetId={target.id}
+              onClose={() => setShowPenalty(false)}
+              onAdded={fetchData}
+            />
+          )}
+        </>
       )}
     </div>
   );

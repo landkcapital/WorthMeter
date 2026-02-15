@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { calculateWorth, calculateAdjustedDate, dailyWorthIncrease, formatCurrency } from "../lib/worthLogic";
 
-export default function LiveDisplay({ target, totalPenalties, nnStats, pastHistory }) {
+export default function LiveDisplay({ target, totalPenalties, nnStats, pastHistory, focusMode }) {
   const [flash, setFlash] = useState(null);
 
   // Build full completion history: past days + today
@@ -54,7 +54,7 @@ export default function LiveDisplay({ target, totalPenalties, nnStats, pastHisto
       <p className={`live-value ${isNegative ? "negative" : "positive"}`}>
         {formatCurrency(value)}
       </p>
-      {nnStats && nnStats.total > 0 && (
+      {!focusMode && nnStats && nnStats.total > 0 && (
         <p className="live-task-value">Each task: +{formatCurrency(taskValue)}</p>
       )}
       <p className="live-sub">
@@ -68,7 +68,7 @@ export default function LiveDisplay({ target, totalPenalties, nnStats, pastHisto
           originalDateStr
         )}
       </p>
-      {nnStats && nnStats.total > 0 && (
+      {!focusMode && nnStats && nnStats.total > 0 && (
         <p className="live-stats">
           <span className="live-stat-up">&#9650; {nnStats.done}</span>
           <span className="live-stat-down">&#9660; {nnStats.missed}</span>

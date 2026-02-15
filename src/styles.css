@@ -123,6 +123,7 @@ body {
   max-width: 700px;
   margin: 0 auto;
   padding: 2.5rem 1.5rem 6rem;
+  position: relative;
 }
 
 main {
@@ -926,6 +927,31 @@ main {
   font-weight: 600;
 }
 
+/* ===== Focus Mode Toggle ===== */
+.focus-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.focus-toggle:hover {
+  border-color: var(--blue1);
+  color: var(--blue1);
+  background: rgba(26, 109, 255, 0.04);
+}
+
 /* ===== Floating Action Button ===== */
 .fab {
   position: fixed;
@@ -1037,6 +1063,55 @@ main {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ===== Account Page ===== */
+.account-page {
+  max-width: 500px;
+  margin: 2rem auto;
+  box-shadow: var(--shadow-md);
+}
+
+.account-page h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text);
+}
+
+.account-page h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+.account-section {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.account-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.account-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.3rem;
+}
+
+.account-email {
+  font-size: 0.95rem;
+  color: var(--text);
+  font-weight: 500;
 }
 
 /* ===== Responsive ===== */

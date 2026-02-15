@@ -15,6 +15,9 @@ export default function Header() {
         WorthMeter
       </h1>
       <nav className="header-nav">
+        <button className="nav-btn app-link" onClick={() => navigate("/account")}>
+          Account
+        </button>
         <button className="nav-btn sign-out" onClick={handleSignOut}>
           Sign Out
         </button>

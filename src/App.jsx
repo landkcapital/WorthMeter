@@ -4,6 +4,7 @@ import { getSession, onAuthStateChange } from "./lib/auth";
 import Header from "./components/Header";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Account from "./pages/Account";
 import "./styles.css";
 
 function ProtectedRoute({ session, ready, children }) {
@@ -80,6 +81,14 @@ export default function App() {
           element={
             <ProtectedRoute session={session} ready={ready}>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute session={session} ready={ready}>
+              <Account session={session} />
             </ProtectedRoute>
           }
         />
