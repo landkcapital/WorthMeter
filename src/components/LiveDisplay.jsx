@@ -1,71 +1,50 @@
-import { useState, useEffect, useRef, useMemo } from "react";
-import { calculateWorth, calculateAdjustedDate, dailyWorthIncrease, formatCurrency } from "../lib/worthLogic";
+import { useState, useEffect, useRef } from "react";
+import { calculateWorth, calculateAdjustedDate, formatCurrency } from "../lib/worthLogic";
 
-export default function LiveDisplay({ target, totalPenalties, nnStats, pastHistory, focusMode }) {
-  const [flash, setFlash] = useState(null);
-
-  // Build full completion history: past days + today
-  const completionHistory = useMemo(() => {
-    const history = [...(pastHistory || [])];
-    if (nnStats && nnStats.total > 0) {
-      history.push({ completed: nnStats.done, total: nnStats.total });
-    }
-    return history;
-  }, [pastHistory, nnStats]);
-
-  const value = calculateWorth(target, totalPenalties, completionHistory);
+export default function LiveDisplay({ target, totalPenalties, nnStats, focusMode }) {
+  const [value, setValue] = useState(() =>
+    calculateWorth(target, totalPenalties)
+  );
   const prevValue = useRef(value);
+  const [flash, setFlash] = useState(false);
 
   useEffect(() => {
-    if (value !== prevValue.current) {
-      setFlash(value > prevValue.current ? "up" : "down");
-      const timeout = setTimeout(() => setFlash(null), 600);
-      prevValue.current = value;
+    const interval = setInterval(() => {
+      const next = calculateWorth(target, totalPenalties);
+      setValue(next);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [target, totalPenalties]);
+
+  useEffect(() => {
+    if (value < prevValue.current) {
+      setFlash(true);
+      const timeout = setTimeout(() => setFlash(false), 600);
       return () => clearTimeout(timeout);
     }
+    prevValue.current = value;
   }, [value]);
 
   const isNegative = value < 0;
-  const adjustedDate = calculateAdjustedDate(target, pastHistory || []);
-
-  // Per-task chunk value for today
-  const daily = dailyWorthIncrease(target);
-  const taskValue = nnStats && nnStats.total > 0 ? daily / nnStats.total : 0;
-
-  // Format dates — adjusted date includes time (hours)
-  const originalDateStr = new Date(target.target_date).toLocaleDateString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
-  });
-  const adjustedDateStr = adjustedDate
-    ? adjustedDate.toLocaleDateString("en-US", {
-        month: "short", day: "numeric", year: "numeric",
-      }) +
-      " at " +
-      adjustedDate.toLocaleTimeString("en-US", {
-        hour: "numeric", minute: "2-digit",
-      })
-    : null;
-
-  const flashClass = flash === "up" ? "flash-green" : flash === "down" ? "flash-red" : "";
+  const originalDate = new Date(target.target_date).toLocaleDateString();
+  const adjustedDate = calculateAdjustedDate(target, totalPenalties);
 
   return (
-    <div className={`live-display ${flashClass}`}>
+    <div className={`live-display ${flash ? "flash-red" : ""}`}>
       <p className="live-label">Current Worth</p>
       <p className={`live-value ${isNegative ? "negative" : "positive"}`}>
         {formatCurrency(value)}
       </p>
-      {!focusMode && nnStats && nnStats.total > 0 && (
-        <p className="live-task-value">Each task: +{formatCurrency(taskValue)}</p>
-      )}
       <p className="live-sub">
         Target: {formatCurrency(target.target_amount)} by{" "}
-        {adjustedDateStr ? (
+        {adjustedDate ? (
           <>
-            <span className="date-original">{originalDateStr}</span>{" "}
-            <span className="date-adjusted">{adjustedDateStr}</span>
+            <span className="date-original">{originalDate}</span>{" "}
+            <span className="date-adjusted">{adjustedDate.toLocaleDateString()}</span>
           </>
         ) : (
-          originalDateStr
+          originalDate
         )}
       </p>
       {!focusMode && nnStats && nnStats.total > 0 && (

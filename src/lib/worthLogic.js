@@ -1,5 +1,46 @@
 /**
- * Calculate daily worth increase (per calendar day).
+ * Calculate current worth based on linear growth from start_amount
+ * toward target_amount over the duration, minus total penalties.
+ */
+export function calculateWorth(target, totalPenalties) {
+  if (!target) return 0;
+
+  const now = Date.now();
+  const start = new Date(target.created_at).getTime();
+  const end = new Date(target.target_date).getTime();
+  const duration = end - start;
+
+  if (duration <= 0) return target.target_amount - totalPenalties;
+
+  const elapsed = now - start;
+  const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+
+  const startAmount = target.start_amount || 0;
+  const baseValue = startAmount + (target.target_amount - startAmount) * progress;
+
+  return baseValue - totalPenalties;
+}
+
+/**
+ * Calculate the adjusted target date accounting for penalties.
+ * Penalties slow progress, so the date extends proportionally.
+ */
+export function calculateAdjustedDate(target, totalPenalties) {
+  if (!target || totalPenalties <= 0) return null;
+
+  const start = new Date(target.created_at).getTime();
+  const end = new Date(target.target_date).getTime();
+  const originalDuration = end - start;
+  const range = target.target_amount - (target.start_amount || 0);
+
+  if (range <= 0 || originalDuration <= 0) return null;
+
+  const newDuration = originalDuration * (range + totalPenalties) / range;
+  return new Date(start + newDuration);
+}
+
+/**
+ * Calculate the daily worth increase (per calendar day).
  */
 export function dailyWorthIncrease(target) {
   if (!target) return 0;
@@ -9,59 +50,6 @@ export function dailyWorthIncrease(target) {
   if (days <= 0) return 0;
   const range = target.target_amount - (target.start_amount || 0);
   return range / days;
-}
-
-/**
- * Calculate current worth based on completed non-negotiables.
- * Each day's profit is divided equally among that day's active NNs.
- * Worth only increases when you tick off a non-negotiable.
- *
- * @param {Object} target
- * @param {number} totalPenalties
- * @param {Array<{completed: number, total: number}>} completionHistory - past days + today
- */
-export function calculateWorth(target, totalPenalties, completionHistory) {
-  if (!target) return 0;
-
-  const daily = dailyWorthIncrease(target);
-  let earned = target.start_amount || 0;
-
-  for (const day of completionHistory || []) {
-    if (day.total > 0) {
-      earned += (daily / day.total) * day.completed;
-    }
-  }
-
-  return earned - totalPenalties;
-}
-
-/**
- * Calculate adjusted target date based on missed non-negotiables.
- * Only past days count — today is still in progress.
- * Each missed NN adds (24 hours / total NNs that day) to the completion date.
- *
- * @param {Object} target
- * @param {Array<{completed: number, total: number}>} pastHistory - past days only
- */
-export function calculateAdjustedDate(target, pastHistory) {
-  if (!target || !pastHistory) return null;
-
-  const dayMs = 24 * 60 * 60 * 1000;
-  let missedMs = 0;
-
-  for (const day of pastHistory) {
-    if (day.total > 0) {
-      const missed = day.total - day.completed;
-      if (missed > 0) {
-        missedMs += (dayMs / day.total) * missed;
-      }
-    }
-  }
-
-  if (missedMs <= 0) return null;
-
-  const end = new Date(target.target_date).getTime();
-  return new Date(end + missedMs);
 }
 
 /**

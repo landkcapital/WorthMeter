@@ -7,6 +7,7 @@ export default function Account({ session }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+  const [focusMode, setFocusMode] = useState(() => localStorage.getItem("focusMode") === "true");
 
   const email = session?.user?.email || "";
 
@@ -40,6 +41,12 @@ export default function Account({ session }) {
     setLoading(false);
   };
 
+  const toggleFocusMode = () => {
+    const next = !focusMode;
+    setFocusMode(next);
+    localStorage.setItem("focusMode", next);
+  };
+
   return (
     <div className="page">
       <div className="account-page card">
@@ -48,6 +55,23 @@ export default function Account({ session }) {
         <div className="account-section">
           <label className="account-label">Email</label>
           <p className="account-email">{email}</p>
+        </div>
+
+        <div className="account-section">
+          <h3>Display</h3>
+          <div className="account-toggle-row">
+            <div>
+              <p className="account-toggle-label">Simple Mode</p>
+              <p className="account-toggle-desc">Show only the worth meter — hides tasks, penalties, and stats.</p>
+            </div>
+            <button
+              className={`account-toggle ${focusMode ? "active" : ""}`}
+              onClick={toggleFocusMode}
+              aria-label="Toggle simple mode"
+            >
+              <span className="account-toggle-knob" />
+            </button>
+          </div>
         </div>
 
         <div className="account-section">
